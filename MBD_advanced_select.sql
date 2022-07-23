@@ -16,11 +16,12 @@ join song s on s.album_id = a.id
 group by album_name
 
 --все исполнители, которые не выпустили альбомы в 2020 году;
-select m.musician_name, a.album_year from musician m
-join album_musician am on m.id = am.musician_id
+select m.musician_name from musician m
+where id not in (select m2.id from musician m2
+join album_musician am on m2.id = am.musician_id
 join album a on a.id = am.album_id
-where album_year != 2020
-group by musician_name, a.album_year
+where album_year = 2020)
+order by id;
 
 --названия сборников, в которых присутствует конкретный исполнитель (выберите сами);
 select musician_name, collection_name from musician m 
@@ -28,9 +29,8 @@ join album_musician am on m.id = am.musician_id
 join album a on a.id = am.album_id
 join song s on s.album_id = a.id
 join collection_song cs on cs.song_id = s.id
-join collection c on c.id = cs.collection_id 
-group by musician_name, collection_name
-having musician_name = 'Вакуленко Василий Михайлович'
+join collection c on c.id = cs.collection_id
+where musician_name = 'Вакуленко Василий Михайлович'
 
 --название альбомов, в которых присутствуют исполнители более 1 жанра;
 select album_name al, count(g.name) from album a 
@@ -40,7 +40,6 @@ join genre_musician gm on m.id = gm.musician_id
 join genre g on g.id = gm.genre_id 
 group by al
 having count(g.name) > 1
-
 
 --наименование треков, которые не входят в сборники;
 select song_name from song s 
@@ -53,7 +52,6 @@ join album a on a.id = s.album_id
 join album_musician am on am.album_id = a.id 
 join musician m on m.id = am.musician_id 
 where duration_second = (select min(duration_second) from song)
-group by musician_name, song_name, duration_second
 
 --название альбомов, содержащих наименьшее количество треков.
 select album_name, count(song_name) from album a 
